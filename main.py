@@ -6,12 +6,16 @@ known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
 music_path = "X:/Documents/Rockstar Games/GTA V/User Music/"
 music_directories = #Your directories here as a list ["X:/Example", "X:/Example2"]
 
+# Util function to remove the "Database", unused
+
 
 def clean():
     if os.path.exists(music_path + "trackdb.txt"):
         os.remove(music_path + "trackdb.txt")
 
 
+# Sanitize inputs from files, removing escape sequences
+# Useful for lists
 def sanitize_file_input(input):
     output = list()
     for entry in input:
@@ -21,11 +25,14 @@ def sanitize_file_input(input):
     return output
 
 
+# Check whether the "Database" is in sync with the actual files
 def sync_db(musicdir_state, db_state):
     if musicdir_state == db_state:
         return True
     else:
         return False
+
+# Create a symlink for supported formats
 
 
 def create_symlink(path, filename):
@@ -34,6 +41,9 @@ def create_symlink(path, filename):
         pass
     else:
         os.symlink(path, dest_path)
+
+# Convert FLAC files
+# TODO: Support other extensions and rename the function
 
 
 def convert_flac(path, filename):
@@ -50,6 +60,8 @@ def convert_flac(path, filename):
         except Exception as e:
             print("Could not convert: {}".format(e))
 
+# Get a list of the tracks stored in the "Database"
+
 
 def get_stored_db_list():
     with open(music_path + "trackdb.txt", "r") as f:
@@ -57,6 +69,8 @@ def get_stored_db_list():
         music_list_fixed = sanitize_file_input(music_list)
 
     return music_list_fixed
+
+# Do the main tasks of conversion and symlinking
 
 
 def process_db(music_list_fixed):
@@ -80,6 +94,7 @@ def process_db(music_list_fixed):
                 print("Failed due to {}".format(e))
 
 
+# Verify whether the "Database" exists or not
 def check_db_existance():
     # TODO: Remove hardcoded path
     if os.path.exists(music_path + "trackdb.txt"):
@@ -88,6 +103,7 @@ def check_db_existance():
         return False
 
 
+# Walk over the source directories and return a list of the files and things
 def seek_source_files():
     music_list = list()
     for dir in music_directories:
@@ -103,16 +119,18 @@ def seek_source_files():
                         music_list.append('\n' + file + '\n')
                     else:
                         continue
-    
+
     return music_list
 
 
+# Write the "Database" file with the list of tracks and files and things
 def write_db_file(music_list):
     with open("X:/Documents/Rockstar Games/GTA V/User Music/trackdb.txt", "w") as f:
         for track in music_list:
             f.write(track)
 
 
+# Verify the status of the database to write or not the "Database" file
 def check_db_status(music_list):
     if check_db_existance():
         print("WARN: DB already exists")
@@ -128,6 +146,7 @@ def check_db_status(music_list):
         write_db_file(music_list)
 
 
+# Clean stale files
 def clean_stale_files():
     stored_db = get_stored_db_list()
     for ext in known_extensions:
@@ -137,8 +156,8 @@ def clean_stale_files():
         for file in files:
             file_list.append(file)
 
-    # Bad GC? How is this variable still existing after the for loop execution? It's beyond scope.
-    del files
+    # Bad GC? How are these variables still existing after the for loop execution? It's out of scope.
+    del files, file
 
     if file_list == stored_db:
         print("No stale files! :D")

@@ -2,8 +2,8 @@ import os
 import ffmpeg
 import ctypes.wintypes
 
-CSIDL_PERSONAL = 5       # My Documents
-SHGFP_TYPE_CURRENT = 0   # Get current, not default value
+CSIDL_PERSONAL = 5  # My Documents
+SHGFP_TYPE_CURRENT = 0  # Get current, not default value
 
 # Random crap to obtain Documents folder
 
@@ -13,7 +13,7 @@ documents_path = buf.value.replace("\\", "/")
 
 remote_db = list()
 known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
-music_directories = #Your directories here as a list ["X:/Example", "X:/Example2"]
+music_directories = []  # Your directories here as a list ["X:/Example", "X:/Example2"]
 music_path = documents_path + "/Rockstar Games/GTA V/User Music/"
 
 
@@ -25,9 +25,9 @@ def clean():
 
 # Sanitize inputs from files, removing escape sequences
 # Useful for lists
-def sanitize_file_input(input):
+def sanitize_file_input(f_input):
     output = list()
-    for entry in input:
+    for entry in f_input:
         entry = entry.strip('\n')
         output.append(entry)
 
@@ -41,6 +41,7 @@ def sync_db(musicdir_state, db_state):
     else:
         return False
 
+
 # Create a symlink for supported formats
 def create_symlink(path, filename):
     dest_path = music_path + filename
@@ -49,11 +50,12 @@ def create_symlink(path, filename):
     else:
         os.symlink(path, dest_path)
 
+
 # Convert FLAC files
 # TODO: Support other extensions and rename the function
 def convert_flac(path, filename):
     dest_path = music_path + \
-        filename.replace(".flac", "") + ".mp3"  # strip is dumb
+                filename.replace(".flac", "") + ".mp3"  # strip is dumb
     if os.path.exists(dest_path):
         pass
     else:
@@ -65,6 +67,7 @@ def convert_flac(path, filename):
         except Exception as e:
             print("Could not convert: {}".format(e))
 
+
 # Get a list of the tracks stored in the "Database"
 def get_stored_db_list():
     with open(music_path + "trackdb.txt", "r") as f:
@@ -73,14 +76,13 @@ def get_stored_db_list():
 
     return music_list_fixed
 
+
 # Do the main tasks of conversion and symlinking
-
-
 def process_db(music_list_fixed):
     for x in range(len(music_list_fixed)):
         cur_track = music_list_fixed[x]
         try:
-            track_name = music_list_fixed[x+1]
+            track_name = music_list_fixed[x + 1]
         except Exception as e:
             break
 
@@ -98,8 +100,7 @@ def process_db(music_list_fixed):
 
 
 # Verify whether the "Database" exists or not
-def check_db_existance():
-    # TODO: Remove hardcoded path
+def check_db_existence():
     if os.path.exists(music_path + "trackdb.txt"):
         return True
     else:
@@ -109,8 +110,8 @@ def check_db_existance():
 # Walk over the source directories and return a list of the files and things
 def seek_source_files():
     music_list = list()
-    for dir in music_directories:
-        for root, _, files in os.walk(dir):
+    for directory in music_directories:
+        for root, _, files in os.walk(directory):
             for file in files:
                 # Fixes slashes, windows does support forward slash
                 if "\\" in root:
@@ -135,7 +136,7 @@ def write_db_file(music_list):
 
 # Verify the status of the database to write or not the "Database" file
 def check_db_status(music_list):
-    if check_db_existance():
+    if check_db_existence():
         print("WARN: DB already exists")
         db_status = sync_db(sanitize_file_input(
             music_list), get_stored_db_list())

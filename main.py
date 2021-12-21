@@ -1,10 +1,21 @@
 import os
 import ffmpeg
+import ctypes.wintypes
+
+CSIDL_PERSONAL = 5       # My Documents
+SHGFP_TYPE_CURRENT = 0   # Get current, not default value
+
+# Random crap to obtain Documents folder
+
+buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
+documents_path = buf.value.replace("\\", "/")
 
 remote_db = list()
 known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
-music_path = "X:/Documents/Rockstar Games/GTA V/User Music/"
 music_directories = #Your directories here as a list ["X:/Example", "X:/Example2"]
+music_path = documents_path + "/Rockstar Games/GTA V/User Music/"
+
 
 # Util function to remove the "Database", unused
 def clean():

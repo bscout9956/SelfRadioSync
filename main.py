@@ -7,8 +7,6 @@ music_path = "X:/Documents/Rockstar Games/GTA V/User Music/"
 music_directories = #Your directories here as a list ["X:/Example", "X:/Example2"]
 
 # Util function to remove the "Database", unused
-
-
 def clean():
     if os.path.exists(music_path + "trackdb.txt"):
         os.remove(music_path + "trackdb.txt")
@@ -33,8 +31,6 @@ def sync_db(musicdir_state, db_state):
         return False
 
 # Create a symlink for supported formats
-
-
 def create_symlink(path, filename):
     dest_path = music_path + filename
     if os.path.exists(dest_path):
@@ -44,8 +40,6 @@ def create_symlink(path, filename):
 
 # Convert FLAC files
 # TODO: Support other extensions and rename the function
-
-
 def convert_flac(path, filename):
     dest_path = music_path + \
         filename.replace(".flac", "") + ".mp3"  # strip is dumb
@@ -61,8 +55,6 @@ def convert_flac(path, filename):
             print("Could not convert: {}".format(e))
 
 # Get a list of the tracks stored in the "Database"
-
-
 def get_stored_db_list():
     with open(music_path + "trackdb.txt", "r") as f:
         music_list = f.readlines()

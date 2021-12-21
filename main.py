@@ -4,6 +4,7 @@ import ffmpeg
 remote_db = list()
 known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
 music_path = "X:/Documents/Rockstar Games/GTA V/User Music/"
+music_directories = #Your directories here as a list ["X:/Example", "X:/Example2"]
 
 
 def clean():

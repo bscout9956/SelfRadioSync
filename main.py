@@ -20,7 +20,7 @@ music_directories = []  # Your directories here as a list ["X:/Example", "X:/Exa
 
 # Unsure about m4a but it's usually AAC stuff
 # Not sure how RAGE deals with this format, never seen it in the game files
-unsupported_formats = [".flac", ".m4a"]
+unsupported_formats = [".ogg", ".flac", ".m4a"]
 music_path = documents_path + "/Rockstar Games/GTA V/User Music/"
 
 
@@ -156,26 +156,41 @@ def check_db_status(music_list):
 # Clean stale files
 def clean_stale_files():
     stored_db = get_stored_db_list()
+
+    # Cleanup for comparison
     for ext in known_formats:
         stored_db = [track.replace(ext, ".mp3") for track in stored_db]
+
+    # Extra cleanup for comparison (this is starting to smell)
+    for x in range(len(stored_db) // 2):  # Prevents OOB
+        if ":/" in stored_db[x]:
+            # Pop paths so the lists match
+            stored_db.pop(x)
+
     file_list = list()
+
+    # Optimization nightmare
     for _, _, files in os.walk(music_path):
         for file in files:
-            file_list.append(file)
+            if ".txt" not in file:  # A bit hardcoded
+                file_list.append(file)
 
     # Bad GC? How are these variables still existing after the for loop execution? It's out of scope.
     del files, file
+
+    # Sort lists for comparison
+    file_list.sort()
+    stored_db.sort()
 
     if file_list == stored_db:
         print("No stale files! :D")
     else:
         print("Stale files detected. Removing...")
         for file in file_list:
-            if file.endswith(".mp3"):
-                if file not in stored_db:
-                    print(file, "needs to be removed")
-                    os.remove(
-                        music_path + file)
+            if file not in stored_db:
+                print(file, "needs to be removed")
+                os.remove(
+                    music_path + file)
 
 
 def main():

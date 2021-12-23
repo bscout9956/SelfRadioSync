@@ -19,7 +19,8 @@ known_formats = [".mp3", ".flac", ".m4a", ".ogg"]
 music_directories = []  # Your directories here as a list ["X:/Example", "X:/Example2"]
 
 # Unsure about m4a but it's usually AAC stuff
-# Not sure how RAGE deals with this format, never seen it in the game files
+# Rage should support OGG but I'd rather keep it to a "safe format"
+# FLAC is unsupported
 unsupported_formats = [".ogg", ".flac", ".m4a"]
 music_path = documents_path + "/Rockstar Games/GTA V/User Music/"
 
@@ -93,7 +94,7 @@ def process_db(music_list_fixed):
         if not ":/" in cur_track:  # Look for drive path, shitty hack
             continue
         # TODO: Remove hardcoding
-        if ".flac" or ".m4a" in cur_track:  # Is an unsupported file?
+        if ".flac" or ".m4a" or ".ogg" in cur_track:  # Is an unsupported file?
             convert_format(cur_track, track_name)
         else:
             try:
@@ -188,7 +189,7 @@ def clean_stale_files():
         print("Stale files detected. Removing...")
         for file in file_list:
             if file not in stored_db:
-                print(file, "needs to be removed")
+                print(file, "is being removed")
                 os.remove(
                     music_path + file)
 

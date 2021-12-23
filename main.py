@@ -15,7 +15,7 @@ ctypes.windll.shell32.SHGetFolderPathW(
 documents_path = buf.value.replace("\\", "/")
 
 remote_db = list()
-known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
+known_formats = [".mp3", ".flac", ".m4a", ".ogg"]
 music_directories = []  # Your directories here as a list ["X:/Example", "X:/Example2"]
 
 # Unsure about m4a but it's usually AAC stuff
@@ -60,17 +60,17 @@ def create_symlink(path, filename):
 
 # Convert unsupported formats
 def convert_format(path, filename):
-    for ext in unsupported_formats:
-        if ext in filename:
+    for fmat in unsupported_formats:
+        if fmat in filename:
             # I tried strip but it did eat some track's names
-            dest_path = music_path + filename.replace(ext, "") + ".mp3"
+            dest_path = music_path + filename.replace(fmat, "") + ".mp3"
             if os.path.exists(dest_path):
                 pass
             else:
                 try:
                     stream = ffmpeg.input(path)
                     stream = ffmpeg.output(stream, dest_path, f='mp3', acodec='libmp3lame',
-                                        audio_bitrate=320000)
+                                           audio_bitrate=320000)
                     ffmpeg.run(stream)
                 except Exception as e:
                     print("Could not convert due to: {}".format(e))
@@ -122,11 +122,10 @@ def seek_source_files():
         for root, _, files in os.walk(directory):
             for file in files:
                 # Fixes slashes, windows does support forward slash
-                if "\\" in root:
-                    root = root.replace("\\", "/")
+                root = root.replace("\\", "/")
 
-                for ext in known_extensions:
-                    if file.endswith(ext):
+                for fmat in known_formats:
+                    if file.endswith(fmat):
                         music_list.append(root + '/' + file)
                         music_list.append('\n' + file + '\n')
                     else:
@@ -161,7 +160,7 @@ def check_db_status(music_list):
 # Clean stale files
 def clean_stale_files():
     stored_db = get_stored_db_list()
-    for ext in known_extensions:
+    for ext in known_formats:
         stored_db = [track.replace(ext, ".mp3") for track in stored_db]
     file_list = list()
     for _, _, files in os.walk(music_path):

@@ -2,18 +2,25 @@ import os
 import ffmpeg
 import ctypes.wintypes
 
+force_clean = False  # Default to false
+
 CSIDL_PERSONAL = 5  # My Documents
 SHGFP_TYPE_CURRENT = 0  # Get current, not default value
 
 # Random crap to obtain Documents folder
 
 buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
+ctypes.windll.shell32.SHGetFolderPathW(
+    None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
 documents_path = buf.value.replace("\\", "/")
 
 remote_db = list()
 known_extensions = [".mp3", ".flac", ".m4a", ".ogg"]
 music_directories = []  # Your directories here as a list ["X:/Example", "X:/Example2"]
+
+# Unsure about m4a but it's usually AAC stuff
+# Not sure how RAGE deals with this format, never seen it in the game files
+unsupported_formats = [".flac", ".m4a"]
 music_path = documents_path + "/Rockstar Games/GTA V/User Music/"
 
 
@@ -51,21 +58,22 @@ def create_symlink(path, filename):
         os.symlink(path, dest_path)
 
 
-# Convert FLAC files
-# TODO: Support other extensions and rename the function
-def convert_flac(path, filename):
-    dest_path = music_path + \
-                filename.replace(".flac", "") + ".mp3"  # strip is dumb
-    if os.path.exists(dest_path):
-        pass
-    else:
-        try:
-            stream = ffmpeg.input(path)
-            stream = ffmpeg.output(stream, dest_path, f='mp3', acodec='libmp3lame',
-                                   audio_bitrate=320000)
-            ffmpeg.run(stream)
-        except Exception as e:
-            print("Could not convert: {}".format(e))
+# Convert unsupported formats
+def convert_format(path, filename):
+    for ext in unsupported_formats:
+        if ext in filename:
+            # I tried strip but it did eat some track's names
+            dest_path = music_path + filename.replace(ext, "") + ".mp3"
+            if os.path.exists(dest_path):
+                pass
+            else:
+                try:
+                    stream = ffmpeg.input(path)
+                    stream = ffmpeg.output(stream, dest_path, f='mp3', acodec='libmp3lame',
+                                        audio_bitrate=320000)
+                    ffmpeg.run(stream)
+                except Exception as e:
+                    print("Could not convert due to: {}".format(e))
 
 
 # Get a list of the tracks stored in the "Database"
@@ -88,9 +96,9 @@ def process_db(music_list_fixed):
 
         if not ":/" in cur_track:  # Look for drive path, shitty hack
             continue
-
-        if ".flac" in cur_track:  # Is a flac file?
-            convert_flac(cur_track, track_name)
+        # TODO: Remove hardcoding
+        if ".flac" or ".m4a" in cur_track:  # Is an unsupported file?
+            convert_format(cur_track, track_name)
         else:
             try:
                 if os.path.exists(cur_track):
@@ -176,6 +184,8 @@ def clean_stale_files():
 
 
 def main():
+    if force_clean:
+        clean()
     check_db_status(seek_source_files())
     process_db(get_stored_db_list())
     clean_stale_files()

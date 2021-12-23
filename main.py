@@ -52,9 +52,7 @@ def sync_db(musicdir_state, db_state):
 # Create a symlink for supported formats
 def create_symlink(path, filename):
     dest_path = music_path + filename
-    if os.path.exists(dest_path):
-        pass
-    else:
+    if not os.path.exists(dest_path):
         os.symlink(path, dest_path)
 
 
@@ -64,9 +62,7 @@ def convert_format(path, filename):
         if fmat in filename:
             # I tried strip but it did eat some track's names
             dest_path = music_path + filename.replace(fmat, "") + ".mp3"
-            if os.path.exists(dest_path):
-                pass
-            else:
+            if not os.path.exists(dest_path):
                 try:
                     stream = ffmpeg.input(path)
                     stream = ffmpeg.output(stream, dest_path, f='mp3', acodec='libmp3lame',
